@@ -12,6 +12,7 @@ import { StepWizardHeader } from '../../components/layout/StepWizardHeader';
 import { GlassCard } from '../../components/primitives/GlassCard';
 import { AppTextField } from '../../components/primitives/AppTextField';
 import { AppButton } from '../../components/primitives/AppButton';
+import { AppCheckbox } from '../../components/primitives/AppCheckbox';
 import { AppText } from '../../components/primitives/AppText';
 import { useBuilderContext } from '../../features/celebrations/context/BuilderContext';
 import { celebrationService } from '../../services/celebration.service';
@@ -198,15 +199,12 @@ export function GiftBuilderStep3Screen({ navigation, route }: Props) {
 
       {/* ─── Memory Gate ─── */}
       <GlassCard worldTheme={worldTheme} variant="subtle" style={styles.section}>
-        <Pressable
-          style={styles.memoryGateToggle}
-          onPress={() => setEnableMemoryGate(!enableMemoryGate)}
-        >
-          <View style={[styles.checkbox, enableMemoryGate && styles.checkboxActive]} />
-          <AppText variant="buttonText" worldTheme={worldTheme}>
-            Enable Memory Gate Prompt
-          </AppText>
-        </Pressable>
+        <AppCheckbox
+          label="Enable Memory Gate Prompt"
+          checked={enableMemoryGate}
+          onChange={setEnableMemoryGate}
+          worldTheme={worldTheme}
+        />
 
         {enableMemoryGate && (
           <View style={styles.memoryGateFields}>
@@ -273,22 +271,6 @@ const styles = StyleSheet.create({
   bucketButton: {
     flex: 1,
     paddingVertical: spacing.sm,
-  },
-  memoryGateToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: 'rgba(247, 208, 112, 0.3)',
-  },
-  checkboxActive: {
-    backgroundColor: '#F7D070',
-    borderColor: '#F7D070',
   },
   memoryGateFields: {
     marginTop: spacing.base,

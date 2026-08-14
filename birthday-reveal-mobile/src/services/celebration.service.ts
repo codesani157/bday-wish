@@ -1,4 +1,5 @@
 import { apiClient } from '../api/client';
+import type { CelebrationListItemData } from '../types/celebration';
 
 export interface CelebrationDraftPayload {
   recipientName: string;
@@ -6,6 +7,11 @@ export interface CelebrationDraftPayload {
   recipientBirthdate: string; // YYYY-MM-DD
   recipientTimezone: string;
   worldId?: string;
+  headline?: string;
+  messageBody?: string;
+  musicUrl?: string;
+  memoryPromptQuestion?: string;
+  memoryPromptAnswerHash?: string;
 }
 
 export interface Celebration {
@@ -30,8 +36,8 @@ export const celebrationService = {
     return response.data;
   },
 
-  listCelebrations: async (): Promise<Celebration[]> => {
-    const response = await apiClient.get<Celebration[]>('/celebrations');
+  listCelebrations: async (): Promise<CelebrationListItemData[]> => {
+    const response = await apiClient.get<CelebrationListItemData[]>('/celebrations');
     return response.data;
   },
 

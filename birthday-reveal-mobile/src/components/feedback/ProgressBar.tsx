@@ -19,12 +19,12 @@ export function ProgressBar({ progress, worldTheme }: ProgressBarProps) {
   }, [progress, animatedWidth]);
 
   return (
-    <View style={[styles.track, { backgroundColor: worldTheme.colors.cardBorder }]}>
+    <View style={[styles.track, { backgroundColor: worldTheme.glass.borderColor }]}>
       <Animated.View
         style={[
           styles.fill,
           {
-            backgroundColor: worldTheme.colors.primary,
+            backgroundColor: worldTheme.accent,
             width: animatedWidth.interpolate({
               inputRange: [0, 1],
               outputRange: ['0%', '100%'],

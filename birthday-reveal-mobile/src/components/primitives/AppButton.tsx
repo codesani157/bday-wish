@@ -44,26 +44,6 @@ export function AppButton({
   fullWidth = false,
   icon,
 }: AppButtonProps) {
-  const scale = React.useRef(new Animated.Value(1)).current;
-
-  const handlePressIn = useCallback(() => {
-    Animated.spring(scale, {
-      toValue: 0.96,
-      useNativeDriver: true,
-      speed: 50,
-      bounciness: 4,
-    }).start();
-  }, [scale]);
-
-  const handlePressOut = useCallback(() => {
-    Animated.spring(scale, {
-      toValue: 1,
-      useNativeDriver: true,
-      speed: 40,
-      bounciness: 6,
-    }).start();
-  }, [scale]);
-
   const handlePress = useCallback(() => {
     if (loading || disabled) return;
     haptics.tap();
@@ -73,40 +53,37 @@ export function AppButton({
   const resolvedStyles = getVariantStyles(variant, worldTheme, disabled);
 
   return (
-    <Animated.View style={{ transform: [{ scale }] }}>
-      <Pressable
-        onPress={handlePress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        disabled={disabled || loading}
-        style={[
-          styles.base,
-          resolvedStyles.container,
-          fullWidth && styles.fullWidth,
-          style,
-        ]}
-      >
-        {loading ? (
-          <ActivityIndicator
-            size="small"
-            color={resolvedStyles.textColor}
-          />
-        ) : (
-          <>
-            {icon && <>{icon}</>}
-            <Text
-              style={[
-                typography.buttonText,
-                { color: resolvedStyles.textColor },
-                icon ? { marginLeft: spacing.sm } : undefined,
-              ]}
-            >
-              {title}
-            </Text>
-          </>
-        )}
-      </Pressable>
-    </Animated.View>
+    <Pressable
+      onPress={handlePress}
+      disabled={disabled || loading}
+      style={({ pressed }) => [
+        styles.base,
+        resolvedStyles.container,
+        fullWidth && styles.fullWidth,
+        style,
+        { transform: [{ scale: pressed && !disabled && !loading ? 0.96 : 1 }] }
+      ]}
+    >
+      {loading ? (
+        <ActivityIndicator
+          size="small"
+          color={resolvedStyles.textColor}
+        />
+      ) : (
+        <>
+          {icon && <>{icon}</>}
+          <Text
+            style={[
+              typography.buttonText,
+              { color: resolvedStyles.textColor },
+              icon ? { marginLeft: spacing.sm } : undefined,
+            ]}
+          >
+            {title}
+          </Text>
+        </>
+      )}
+    </Pressable>
   );
 }
 
