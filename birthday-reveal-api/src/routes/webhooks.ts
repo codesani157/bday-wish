@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 import { db } from '../db';
-import { celebrations, emailEvents } from '../db/schema';
+import { celebrations } from '../db/schema';
 import { eq } from 'drizzle-orm';
 import crypto from 'crypto';
 

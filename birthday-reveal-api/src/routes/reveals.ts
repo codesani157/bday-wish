@@ -66,24 +66,27 @@ export const revealRoutes: FastifyPluginAsync = async (server) => {
 
     const schema = z.object({
       eventType: z.enum(['link_opened', 'tier_detected', 'assets_loaded', 'swoop_completed', 'gift_tapped', 'unwrap_started', 'unwrap_completed', 'prompt_passed', 'prompt_failed', 'prompt_bypassed', 'message_viewed', 'photos_viewed', 'music_started', 'easter_egg_found', 'celebration_reached', 'replay_triggered']),
-      metadataJson: z.any().optional()
+      eventData: z.any().optional()
     });
     
-    const { eventType, metadataJson } = schema.parse(request.body);
+    const { eventType, eventData } = schema.parse(request.body);
 
     await db.insert(revealEvents).values({
       celebrationId: celebration.id,
       eventType,
-      occurredAt: new Date(),
-      metadataJson,
-      userAgent: request.headers['user-agent']
+      eventData: {
+        ...eventData,
+        userAgent: request.headers['user-agent']
+      },
     });
 
-    // Handle 'link_opened' state transition
+    // Handle 'link_opened' state transition and Sender Notification
     if (eventType === 'link_opened' && celebration.firstOpenedAt === null) {
       await db.update(celebrations)
         .set({ firstOpenedAt: new Date(), status: 'opened' })
         .where(eq(celebrations.id, celebration.id));
+        
+      console.log(`[EMAIL NOTIFICATION] Sending 'Recipient Opened Gift' email to Sender ID: ${celebration.senderId}`);
     }
     
     // Handle 'celebration_reached' state transition

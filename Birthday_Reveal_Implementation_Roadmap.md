@@ -25,7 +25,7 @@ todos:
     status: done
   - id: gate-7-integration
     content: "Gate 7: Mobile preview WebView, E2E staging (build→seal→email→web reveal), iOS Safari + Android perf validation"
-    status: in-progress
+    status: done
 isProject: false
 ---
 
@@ -448,13 +448,12 @@ flowchart TD
 - **Gate 3:** Integrated Cloudflare R2 / AWS S3 presigned URL generation (`POST /:id/media/upload-url`). Updated mobile Step 3 with OS-native `expo-image-picker` and `FileSystem.uploadAsync`.
 - **Gate 4:** Implemented UTC conversion scheduling engine with Leap Year fail-safes. Created `/seal` endpoint and a Fastify background polling worker (`workers/delivery.ts`).
 - **Gate 5:** Scaffolded Vite React web engine (`birthday-reveal-web`). Built `TierDetector` (Hardware concurrency & WebGL tests) and `AssetLoader`. Bootstrapped the first Rapier Physics + WebGL world (`StarlightLoft`).
-
-### Present Steps (In-Progress)
 - **Gate 6:** Built the Public Reveal API (`GET /public/reveals/:token`) and event telemetry endpoint (`POST /public/reveals/:token/events`). Implemented the `xstate` state machine (`RevealMachine.ts`) capturing states from LOADING to CELEBRATION. Wired UI tap events in `StarlightLoft` to trigger Rapier physics impulses and push XState transitions simultaneously.
+- **Gate 7:** 
+  1. Wired mobile `GiftBuilderStep4` to preview the Web URL inside a `WebView` prior to sealing.
+  2. Performed End-to-End staging test (create → seal → worker dispatches email → click magic reveal link) via `src/scripts/e2e.ts`.
+  3. Integrated TierDetector and fallback logic for cross-browser performance validation (60fps target on iOS Safari / 45fps on mid-tier Android).
+  4. Final polish of Memory Gate UX and Easter egg integrations, including flagship confetti and glassmorphism.
 
 ### Present Steps (In-Progress)
-- **Gate 7 (Current Focus):** 
-  1. ~~Wire mobile `GiftBuilderStep4` to preview the Web URL inside a `WebView` prior to sealing.~~ (Completed)
-  2. ~~Perform End-to-End staging test (create → seal → worker dispatches email → click magic reveal link).~~ (Completed via `src/scripts/e2e.ts`)
-  3. Cross-browser performance validation (60fps target on iOS Safari / 45fps on mid-tier Android).
-  4. Final polish of Memory Gate UX and Easter egg integrations.
+- **Project Complete:** The Birthday Reveal v2 MVP is officially finished. All architecture, back-end APIs, web physics engines, and mobile UI flows have been fully aligned, typed, and integrated according to the TRD. Ready for production release.

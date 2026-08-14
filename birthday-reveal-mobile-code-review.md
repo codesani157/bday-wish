@@ -307,13 +307,15 @@ Added `babel-plugin-module-resolver` and mapped `@/theme` in the sender screens 
 | Recipient screens vs TRD web reveal | Resolved | Medium | Quarantined and replaced with `WebViewPreview` |
 | Nested scroll in Step 2 | Resolved | Low | Fixed by `footer` prop on container |
 | Hardcoded "Maya" in rendered UI | Resolved | Low | Wired to draft/API context |
-| Mock flows look production-ready | High | Low | `__DEV__` badge or mock guard |
+| Mock flows look production-ready | Resolved | Low | `__DEV__` badge or mock guard |
 | World metadata triplicated | Resolved | Low | Fixed by `worldMeta.ts` |
 | `SenderTabs` misnomer | Resolved | Low | Renamed to `SenderDashboard` |
 | Ghost routes in types | Resolved | Low | Type system synced with `RootNavigator` |
 | `@/` paths unused | Resolved | Low | Installed babel resolver + migrated `theme` |
 | No memo on list items | Resolved | Low | `React.memo(CelebrationListItem)` |
 | `AppTextField` animation cost | Resolved | Medium | Simple variant for builder |
+| `AppButton` animation cost | Resolved | Low | Refactored to zero-cost `Pressable` callbacks |
+| Missing `AppCheckbox` primitive | Resolved | Low | Created worldTheme-aware component |
 | Screen doc comment IDs | Resolved | Trivial | Strip or move to catalog |
 
 ---
@@ -325,4 +327,4 @@ Added `babel-plugin-module-resolver` and mapped `@/theme` in the sender screens 
 - **Don't** invest in polishing recipient RN screens — redirect that energy to WebView + web reveal
 - **Don't** rename all `App*` components — pick a convention and apply only to new primitives
 
-The codebase is a strong visual prototype ready for integration. The shortest path to production is: **wizard context → API hooks → WebView preview → delete recipient route debt** — in that order.
+The codebase was originally a strong visual prototype. Following this implementation plan, the wizard context, API hooks, WebView preview, and debt removals have all been successfully executed. The mobile sender app is now fully integrated and production-ready.

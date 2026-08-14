@@ -7,6 +7,7 @@ import { worldRoutes } from './routes/worlds';
 import { celebrationRoutes } from './routes/celebrations';
 import { webhookRoutes } from './routes/webhooks';
 import { revealRoutes } from './routes/reveals';
+import { adminRoutes } from './routes/admin';
 
 const server = Fastify({
   logger: {
@@ -28,9 +29,9 @@ async function start() {
   await server.register(jwtPlugin);
 
   // Global error handler for Zod validation errors
-  server.setErrorHandler((error, request, reply) => {
+  server.setErrorHandler((error: any, request, reply) => {
     if (error instanceof ZodError) {
-      reply.status(400).send({ error: 'Validation failed', details: error.errors });
+      reply.status(400).send({ error: 'Validation failed', details: (error as any).errors || (error as any).issues });
       return;
     }
     reply.send(error);
@@ -45,6 +46,7 @@ async function start() {
   server.register(celebrationRoutes, { prefix: '/celebrations' });
   server.register(webhookRoutes, { prefix: '/webhooks' });
   server.register(revealRoutes, { prefix: '/public/reveals' });
+  server.register(adminRoutes, { prefix: '/admin' });
 
   try {
     await server.listen({ port: 3000, host: '0.0.0.0' });

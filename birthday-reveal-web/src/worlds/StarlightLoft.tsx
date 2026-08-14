@@ -1,18 +1,33 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Environment, PerspectiveCamera, OrbitControls, Float, Box } from '@react-three/drei';
 import { Physics, RigidBody, type RapierRigidBody } from '@react-three/rapier';
 
 export const StarlightLoft = ({ onTapGift }: { onTapGift?: () => void }) => {
   const giftRef = useRef<RapierRigidBody>(null);
+  const [tapCount, setTapCount] = useState(0);
 
   const handleTap = () => {
     if (giftRef.current) {
       // Apply an upward/wobble impulse to simulate tapping the gift
-      giftRef.current.applyImpulse({ x: (Math.random() - 0.5) * 2, y: 5, z: (Math.random() - 0.5) * 2 }, true);
-      giftRef.current.applyTorqueImpulse({ x: Math.random() * 2, y: Math.random() * 2, z: Math.random() * 2 }, true);
+      const impulseStrength = tapCount >= 5 ? 10 : 5; // Easter egg: much stronger bounce
+      giftRef.current.applyImpulse({ 
+        x: (Math.random() - 0.5) * 2, 
+        y: impulseStrength, 
+        z: (Math.random() - 0.5) * 2 
+      }, true);
+      giftRef.current.applyTorqueImpulse({ 
+        x: Math.random() * 2, 
+        y: Math.random() * 2, 
+        z: Math.random() * 2 
+      }, true);
     }
+    
+    setTapCount(c => c + 1);
     onTapGift?.();
   };
+
+  // Easter Egg: Gift turns gold after 5 taps
+  const giftColor = tapCount >= 5 ? '#ffd700' : '#e94560';
 
   return (
     <>
@@ -36,7 +51,11 @@ export const StarlightLoft = ({ onTapGift }: { onTapGift?: () => void }) => {
         <Float speed={2} rotationIntensity={0.5} floatIntensity={1}>
           <RigidBody ref={giftRef} colliders="cuboid" restitution={0.5} mass={1}>
             <Box args={[1.5, 1.5, 1.5]} position={[0, 3, 0]} onClick={handleTap}>
-              <meshStandardMaterial color="#e94560" metalness={0.8} roughness={0.2} />
+              <meshStandardMaterial 
+                color={giftColor} 
+                metalness={tapCount >= 5 ? 1 : 0.8} 
+                roughness={0.2} 
+              />
             </Box>
           </RigidBody>
         </Float>
