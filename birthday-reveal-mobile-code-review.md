@@ -6,7 +6,7 @@ Reviewed all 55 source files in the current tree. The prior [`analysis_results.m
 
 ## Executive read
 
-You have a well-typed UI shell with a coherent visual language (`GlassCard`, world themes, haptics). The architecture is **presentation-complete, integration-empty**: every screen is a prototype wired to local state and mock data. The highest-risk debt is not styling — it's **the wizard having no memory**, **world theme selection not propagating past Step 2**, and **seven recipient screens that contradict the TRD's web-only reveal**.
+You have a well-typed UI shell with a coherent visual language (`GlassCard`, world themes, haptics). The foundational API architecture (services, interceptors, React Query) and `BuilderContext` have been added, resolving the wizard's memory loss and theme propagation issues. However, the UI screens **are still unwired** and rely on `simulateAutoSave()`. The highest-risk remaining debt is the **seven recipient screens that contradict the TRD's web-only reveal**.
 
 ---
 
@@ -138,19 +138,13 @@ Same pattern in Step 2. When API lands, you'll touch every screen. **One hook** 
 
 The screen accepts `celebrationId` via navigation types but never reads `route.params`. Everything is hardcoded "Maya" + a static timeline. This is worse than a missing screen — it **looks done** while being entirely disconnected.
 
-### 3c. Wizard state is fragmented and non-persistent
+### 3c. UI is disconnected from new BuilderContext and API hooks
 
-Each builder step owns isolated `useState`. Navigate Step 1 → Step 2 → back → **all fields empty**. Step 2 selects a world and applies `activeTheme`, but Step 3 immediately reverts to `defaultTheme`:
-
-```46:46:birthday-reveal-mobile/src/screens/sender/GiftBuilderStep3Screen.tsx
-<ScreenContainer worldTheme={defaultTheme}>
-```
-
-The PRD's "World choice must feel cohesive from email → loading → reveal" is broken at Step 3 of the builder itself.
+While `BuilderContext` now exists to persist state across steps, and `useCreateCelebration` / `useSealCelebration` hooks have been created, the UI components (like `GiftBuilderStep1Screen`) still rely on `simulateAutoSave()` instead of triggering actual API mutations.
 
 ### 3d. `celebrationId` is passed but never validated or created
 
-Step 1 navigates with `celebrationId: route.params?.celebrationId ?? 'new-draft'` — a string literal, not a UUID. No step calls the API client in [`client.ts`](birthday-reveal-mobile/src/api/client.ts). The token accessor pattern (`setTokenAccessor`) is ready but nothing calls it.
+Step 1 navigates with `celebrationId: route.params?.celebrationId ?? 'new-draft'` — a string literal, not a UUID. The API client now has robust interceptors and token management, but the builder flow does not yet call it to create an actual draft backend record.
 
 ### 3e. Nested scroll in Step 2
 
@@ -254,9 +248,9 @@ These should render a visible **"mock mode"** dev badge or guard behind `__DEV__
 
 [`tsconfig.json`](birthday-reveal-mobile/tsconfig.json) defines `@/*` but **zero imports** use it. Either adopt `@/components`, `@/theme`, `@/types` now, or remove the alias to avoid false expectations. Note: Expo also needs `babel-plugin-module-resolver` for runtime resolution.
 
-### 5d. Missing TRD-mandated dependencies
+### 5d. API Integration is incomplete despite dependencies being present
 
-[`package.json`](birthday-reveal-mobile/package.json) has none of: `@tanstack/react-query`, `zustand`, `react-hook-form`, `zod`, `expo-secure-store`, `expo-linking`, `expo-image-picker`. The types and API client are built for a stack that isn't installed.
+The necessary dependencies (`@tanstack/react-query`, `zustand`, `expo-secure-store`, etc.) have been installed, and the API/Service layers are architected. However, the screens still need to be migrated to use `useQuery` and `useMutation` hooks instead of static mock data.
 
 ### 5e. Recipient screens are architectural debt, not asset
 
@@ -342,8 +336,8 @@ Add `babel-plugin-module-resolver` in Expo config. ESLint rule: no imports deepe
 
 | Issue | Severity | Effort | Fix |
 |---|---|---|---|
-| Wizard state lost on back-nav | Critical | Medium | `useCelebrationDraft` reducer |
-| World theme resets at Step 3 | Critical | Low | `BuilderWorldContext` |
+| API hooks exist but UI unwired | Critical | Medium | Replace `simulateAutoSave` with `useCreateCelebration` |
+| World theme resets at Step 3 | Resolved | Low | Fixed by `BuilderContext` |
 | `CelebrationDetail` ignores route param | Critical | Low | Read `route.params`, or show NotFound |
 | Recipient screens vs TRD web reveal | High | Medium | WebView preview; quarantine prototypes |
 | Nested scroll in Step 2 | High | Low | `scrollable={false}` on container |
