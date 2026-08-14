@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "Birthday Reveal",
+    "slug": "birthday-reveal",
+    "version": "2.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B132B"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.birthdayreveal.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#0B132B"
+      },
+      "package": "com.birthdayreveal.app"
+    },
+    "scheme": "birthdayreveal",
+    "plugins": [
+      "expo-secure-store"
+    ]
+  }
+}
