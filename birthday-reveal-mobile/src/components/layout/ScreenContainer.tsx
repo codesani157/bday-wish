@@ -35,6 +35,7 @@ export function ScreenContainer({
 
   const containerStyle: ViewStyle = {
     flex: 1,
+    minHeight: '100%' as any,
     backgroundColor: worldTheme.bgPrimary,
     paddingTop: insets.top,
     paddingBottom: insets.bottom,

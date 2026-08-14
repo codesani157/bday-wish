@@ -10,6 +10,8 @@ import { revealMachine } from './core/RevealMachine';
 import { MemoryGateOverlay } from './ui/MemoryGateOverlay';
 import confetti from 'canvas-confetti';
 
+import { SenderPortal } from './ui/SenderPortal';
+
 interface RevealPayload {
   mode: 'reveal' | 'countdown';
   unlocksAt?: string;
@@ -34,6 +36,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [state, send] = useMachine(revealMachine);
   const confettiFired = useRef(false);
+  const [showPortal, setShowPortal] = useState(false);
   
   const [payload, setPayload] = useState<RevealPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +49,7 @@ function App() {
     const token = params.get('token');
     
     if (!token) {
-      setError('No gift token provided. Did you click the full link?');
+      setShowPortal(true);
       setLoading(false);
       return;
     }
@@ -117,20 +120,46 @@ function App() {
   const dpr = tier === 'full' ? [1, 2] : [1, 1];
   const antialias = tier === 'full';
   
+  if (showPortal) {
+    return (
+      <SenderPortal 
+        onLaunchDemo={() => {
+          setShowPortal(false);
+          setLoading(true);
+          setPayload({
+            mode: 'reveal',
+            celebration: {
+              id: 'demo-celebration',
+              recipientName: 'Alex',
+              headline: 'Happy Birthday',
+              messageBody: 'Wishing you a day filled with joy, magical moments, and extraordinary surprises!',
+              musicUrl: null,
+              memoryPromptQuestion: 'What is our favorite vacation spot?'
+            },
+            worldConfig: {
+              id: 'demo-world',
+              key: 'starlight-loft'
+            }
+          });
+        }}
+      />
+    );
+  }
+
   if (error) {
     return (
-      <div style={{ ...fallbackStyle, background: '#000' }}>
-        <h1 style={{ color: '#FF4C4C' }}>Oops!</h1>
-        <p>{error}</p>
+      <div style={{ ...fallbackStyle, background: '#000', width: '100vw', height: '100vh' }}>
+        <h1 style={{ color: '#FF4C4C', fontSize: '36px', marginBottom: '16px' }}>Oops!</h1>
+        <p style={{ fontSize: '18px', opacity: 0.8 }}>{error}</p>
       </div>
     );
   }
 
   if (payload?.mode === 'countdown') {
     return (
-      <div style={{ ...fallbackStyle, background: '#000' }}>
-        <h1>It's Not Time Yet!</h1>
-        <p>This gift for {payload.recipientName} opens on: {new Date(payload.unlocksAt!).toLocaleString()}</p>
+      <div style={{ ...fallbackStyle, background: '#000', width: '100vw', height: '100vh' }}>
+        <h1 style={{ fontSize: '36px', marginBottom: '16px' }}>It's Not Time Yet!</h1>
+        <p style={{ fontSize: '18px', opacity: 0.8 }}>This gift for {payload.recipientName} opens on: {new Date(payload.unlocksAt!).toLocaleString()}</p>
       </div>
     );
   }
