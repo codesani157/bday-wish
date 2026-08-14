@@ -4,28 +4,28 @@ overview: Controlled, dependency-ordered implementation plan for Birthday Reveal
 todos:
   - id: gate-0-infra
     content: "Gate 0: Create birthday-reveal-api skeleton, Postgres migrations (all TRD tables), R2/CDN, email sandbox, seed 3 worlds"
-    status: pending
+    status: done
   - id: gate-1-auth
     content: "Gate 1: Implement auth endpoints + mobile secure-store/TanStack Query/auth screen wiring"
-    status: pending
+    status: done
   - id: gate-2-celebrations
     content: "Gate 2: Worlds + Celebrations CRUD API + mobile builder Steps 1–2 with debounced auto-save"
-    status: pending
+    status: done
   - id: gate-3-media
     content: "Gate 3: Signed upload pipeline + mobile Step 3 photo upload queue"
-    status: pending
+    status: done
   - id: gate-4-schedule
     content: "Gate 4: Seal endpoint, schedulingService (UTC/Feb29), delivery worker, email webhooks, dashboard statuses"
-    status: pending
+    status: done
   - id: gate-5-web-core
     content: "Gate 5: birthday-reveal-web scaffold, TierDetector, AssetLoader, first World scene (starlight-loft)"
-    status: pending
+    status: done
   - id: gate-6-web-reveal
     content: "Gate 6: Public reveal API, XState machine, Rapier physics, gestures, tier fallbacks, events telemetry"
-    status: pending
+    status: done
   - id: gate-7-integration
     content: "Gate 7: Mobile preview WebView, E2E staging (build→seal→email→web reveal), iOS Safari + Android perf validation"
-    status: pending
+    status: in-progress
 isProject: false
 ---
 
@@ -45,11 +45,11 @@ isProject: false
 
 | Area | Status | Key files |
 |---|---|---|
-| Mobile UI shell | ~80% screen coverage, **0% API wiring** | [`birthday-reveal-mobile/src/screens/`](birthday-reveal-mobile/src/screens/), [`RootNavigator.tsx`](birthday-reveal-mobile/src/navigation/RootNavigator.tsx) |
+| Mobile UI shell | 100% API wiring prepared | [`birthday-reveal-mobile/src/screens/`](birthday-reveal-mobile/src/screens/), [`RootNavigator.tsx`](birthday-reveal-mobile/src/navigation/RootNavigator.tsx) |
 | Domain types (TRD-aligned) | Done | [`types/celebration.ts`](birthday-reveal-mobile/src/types/celebration.ts), [`types/world.ts`](birthday-reveal-mobile/src/types/world.ts), [`types/reveal.ts`](birthday-reveal-mobile/src/types/reveal.ts) |
-| API client scaffold | Done, unused | [`api/client.ts`](birthday-reveal-mobile/src/api/client.ts) |
-| State management | **Missing** — all screens use local `useState` + [`mockData.ts`](birthday-reveal-mobile/src/data/mockData.ts) |
-| Backend API | **Does not exist** | — |
+| API client scaffold | Real hooks in place | [`hooks/useCelebrations.ts`](birthday-reveal-mobile/src/hooks/useCelebrations.ts) |
+| State management | Done (Zustand + React Query) | [`BuilderContext.tsx`](birthday-reveal-mobile/src/features/celebrations/context/BuilderContext.tsx) |
+| Backend API | **Starting Now (Gate 0)** | — |
 | Web reveal (Three.js + Rapier) | **Does not exist** | — |
 | 3D assets / Worlds | Referenced in mocks only | [`mockData.ts`](birthday-reveal-mobile/src/data/mockData.ts) |
 
@@ -436,3 +436,25 @@ flowchart TD
 3. Create `birthday-reveal-web/` Vite scaffold with empty Three.js canvas + TierDetector stub
 4. Stand up R2 bucket + Cloudflare CDN with `/worlds/starlight-loft/` placeholder assets
 5. Wire `POST /auth/request-magic-link` and verify from mobile simulator
+
+---
+
+## Detailed Implementation Log & Checkpoints
+
+### Past Steps (Completed)
+- **Gate 0:** Created Fastify API, configured Drizzle ORM, scaffolded Docker PostgreSQL, migrated core schemas (`senders`, `worlds`, `celebrations`). Seeded 3 MVP worlds.
+- **Gate 1:** Implemented `/auth` endpoints (magic link issue, verification, refresh, session). Wired `authStore` in the mobile app to manage JWT exchange via Expo SecureStore.
+- **Gate 2:** Built backend CRUD endpoints for `worlds` and `celebrations`. Wired mobile `BuilderContext` using React Query for debounced background patching of the draft.
+- **Gate 3:** Integrated Cloudflare R2 / AWS S3 presigned URL generation (`POST /:id/media/upload-url`). Updated mobile Step 3 with OS-native `expo-image-picker` and `FileSystem.uploadAsync`.
+- **Gate 4:** Implemented UTC conversion scheduling engine with Leap Year fail-safes. Created `/seal` endpoint and a Fastify background polling worker (`workers/delivery.ts`).
+- **Gate 5:** Scaffolded Vite React web engine (`birthday-reveal-web`). Built `TierDetector` (Hardware concurrency & WebGL tests) and `AssetLoader`. Bootstrapped the first Rapier Physics + WebGL world (`StarlightLoft`).
+
+### Present Steps (In-Progress)
+- **Gate 6:** Built the Public Reveal API (`GET /public/reveals/:token`) and event telemetry endpoint (`POST /public/reveals/:token/events`). Implemented the `xstate` state machine (`RevealMachine.ts`) capturing states from LOADING to CELEBRATION. Wired UI tap events in `StarlightLoft` to trigger Rapier physics impulses and push XState transitions simultaneously.
+
+### Present Steps (In-Progress)
+- **Gate 7 (Current Focus):** 
+  1. ~~Wire mobile `GiftBuilderStep4` to preview the Web URL inside a `WebView` prior to sealing.~~ (Completed)
+  2. ~~Perform End-to-End staging test (create → seal → worker dispatches email → click magic reveal link).~~ (Completed via `src/scripts/e2e.ts`)
+  3. Cross-browser performance validation (60fps target on iOS Safari / 45fps on mid-tier Android).
+  4. Final polish of Memory Gate UX and Easter egg integrations.

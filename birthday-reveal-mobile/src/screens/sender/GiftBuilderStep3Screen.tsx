@@ -14,6 +14,9 @@ import { AppTextField } from '../../components/primitives/AppTextField';
 import { AppButton } from '../../components/primitives/AppButton';
 import { AppText } from '../../components/primitives/AppText';
 import { useBuilderContext } from '../../features/celebrations/context/BuilderContext';
+import { celebrationService } from '../../services/celebration.service';
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 import { spacing, radius } from '@/theme/spacing';
 import type { RootStackParamList } from '../../types/navigation';
 
@@ -24,10 +27,46 @@ export function GiftBuilderStep3Screen({ navigation, route }: Props) {
   const [enableMemoryGate, setEnableMemoryGate] = useState(false);
   const [photos, setPhotos] = useState<string[]>([]);
   const [hiddenNotes, setHiddenNotes] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleAddPhoto = () => {
-    // Placeholder — would trigger expo-image-picker
-    setPhotos((prev) => [...prev, `photo_${prev.length + 1}`]);
+  const handleAddPhoto = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Camera roll permissions are required.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets?.[0]) {
+      const asset = result.assets[0];
+      const filename = asset.fileName || `photo_${Date.now()}.jpg`;
+      const mimeType = asset.mimeType || 'image/jpeg';
+      
+      setIsUploading(true);
+      try {
+        const { uploadUrl } = await celebrationService.getUploadUrl(route.params.celebrationId, {
+          filename,
+          mimeType
+        });
+        
+        await FileSystem.uploadAsync(uploadUrl, asset.uri, {
+          httpMethod: 'PUT',
+          headers: { 'Content-Type': mimeType }
+        });
+        
+        setPhotos((prev) => [...prev, asset.uri]);
+      } catch (err) {
+        console.error('Upload failed', err);
+        alert('Upload failed. Please try again.');
+      } finally {
+        setIsUploading(false);
+      }
+    }
   };
 
   const handleAddNote = () => {
@@ -90,13 +129,13 @@ export function GiftBuilderStep3Screen({ navigation, route }: Props) {
               +
             </AppText>
             <AppText variant="uiLabelSmall" worldTheme={worldTheme} muted align="center">
-              Add Photo
+              {isUploading ? 'Uploading...' : 'Add Photo'}
             </AppText>
           </Pressable>
           {photos.map((photo, i) => (
             <View key={i} style={[styles.photoSlot, styles.photoFilled]}>
-              <AppText variant="uiLabelSmall" worldTheme={worldTheme} muted>
-                📷 {photo}
+              <AppText variant="uiLabelSmall" worldTheme={worldTheme} muted numberOfLines={1}>
+                📷 Image {i + 1}
               </AppText>
             </View>
           ))}

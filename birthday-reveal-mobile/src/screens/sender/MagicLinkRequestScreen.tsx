@@ -18,6 +18,7 @@ import { defaultTheme } from '@/theme/worldThemes';
 import { spacing } from '@/theme/spacing';
 import { config } from '../../config/env';
 import type { RootStackParamList } from '../../types/navigation';
+import { useAuthStore } from '../../store/authStore';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MagicLinkRequest'>;
 
@@ -48,8 +49,13 @@ export function MagicLinkRequestScreen({ navigation }: Props) {
     setIsSubmitting(true);
     setError('');
 
-    // Simulate API call (no backend logic)
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      await useAuthStore.getState().requestMagicLink(email);
+    } catch (err) {
+      setError('Failed to send magic link. Please try again.');
+      setIsSubmitting(false);
+      return;
+    }
 
     setIsSubmitting(false);
 

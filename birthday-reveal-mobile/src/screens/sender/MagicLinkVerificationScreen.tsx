@@ -15,6 +15,7 @@ import { InlineAlert } from '../../components/feedback/InlineAlert';
 import { defaultTheme } from '@/theme/worldThemes';
 import { spacing } from '@/theme/spacing';
 import type { RootStackParamList } from '../../types/navigation';
+import { useAuthStore } from '../../store/authStore';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MagicLinkVerification'>;
 
@@ -25,16 +26,34 @@ export function MagicLinkVerificationScreen({ navigation, route }: Props) {
   const [state, setState] = useState<VerifyState>('verifying');
 
   useEffect(() => {
-    // Simulate verification (no backend logic)
-    const timer = setTimeout(() => {
-      setState('success');
-      // Auto-redirect after success
-      setTimeout(() => {
-        navigation.reset({ index: 0, routes: [{ name: 'SenderDashboard' }] });
-      }, 1200);
-    }, 2000);
+    let mounted = true;
+    
+    const verify = async () => {
+      try {
+        await useAuthStore.getState().verifyToken(token);
+        if (mounted) {
+          setState('success');
+          setTimeout(() => {
+            navigation.reset({ index: 0, routes: [{ name: 'SenderDashboard' }] });
+          }, 1200);
+        }
+      } catch (err: any) {
+        if (!mounted) return;
+        
+        // Detailed error mapping would go here
+        if (err?.response?.status === 401) {
+          setState('expired');
+        } else {
+          setState('used'); // simplified error state
+        }
+      }
+    };
+    
+    verify();
 
-    return () => clearTimeout(timer);
+    return () => {
+      mounted = false;
+    };
   }, [token, navigation]);
 
   return (

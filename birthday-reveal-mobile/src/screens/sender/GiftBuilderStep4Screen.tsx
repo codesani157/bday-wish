@@ -4,7 +4,8 @@
  */
 
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
+import { WebView } from 'react-native-webview';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { GlassCard } from '../../components/primitives/GlassCard';
@@ -29,15 +30,18 @@ export function GiftBuilderStep4Screen({ navigation, route }: Props) {
       </View>
 
       <View style={styles.previewArea}>
-        <AppText variant="displayHero" worldTheme={worldTheme} align="center" style={{ fontSize: 80, marginBottom: 24 }}>
-          🎁
-        </AppText>
-        <AppText variant="headlineH1" worldTheme={worldTheme} align="center" style={{ marginBottom: 12 }}>
-          Happy Birthday Your recipient!
-        </AppText>
-        <AppText variant="bodyMessage" worldTheme={worldTheme} muted align="center">
-          This is how your recipient will experience the gift.
-        </AppText>
+        {Platform.OS === 'web' ? (
+          <iframe 
+            src={`http://localhost:5173/?preview=true&celebrationId=${route.params.celebrationId}`}
+            style={{ flex: 1, width: '100%', border: 'none', borderRadius: 24 }}
+          />
+        ) : (
+          <WebView 
+            source={{ uri: `http://localhost:5173/?preview=true&celebrationId=${route.params.celebrationId}` }}
+            style={{ flex: 1, width: '100%', borderRadius: 24 }}
+            scrollEnabled={false}
+          />
+        )}
       </View>
 
       <View style={styles.controls}>
@@ -51,6 +55,6 @@ export function GiftBuilderStep4Screen({ navigation, route }: Props) {
 const styles = StyleSheet.create({
   previewBar: { alignItems: 'center', paddingVertical: 12 },
   badge: { borderRadius: 999 },
-  previewArea: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 },
+  previewArea: { flex: 1, width: '100%', paddingHorizontal: 16, paddingBottom: 16, overflow: 'hidden' },
   controls: { paddingHorizontal: 20, paddingBottom: 32 },
 });
