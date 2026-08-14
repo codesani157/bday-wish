@@ -10,7 +10,7 @@ import { GlassCard } from '../primitives/GlassCard';
 import { AppText } from '../primitives/AppText';
 import { spacing, radius, shadows } from '../../theme/spacing';
 import { resolveWorldTheme } from '../../theme/worldThemes';
-import { worldIcons, physicsTags } from '../../theme/worldMeta';
+import { worldMeta } from '../../theme/worldMeta';
 import { haptics } from '../../utils/haptics';
 import type { WorldKey } from '../../types/world';
 
@@ -56,7 +56,7 @@ export const WorldCard = React.memo(function WorldCard({
           {/* World icon + name */}
           <View style={styles.header}>
             <AppText variant="displayHero" worldTheme={theme} style={styles.icon}>
-              {worldIcons[worldKey]}
+              {worldMeta[worldKey].icon}
             </AppText>
             <View style={styles.titleBlock}>
               <AppText variant="sectionTitleH2" worldTheme={theme}>
@@ -82,7 +82,7 @@ export const WorldCard = React.memo(function WorldCard({
 
           {/* Physics tags */}
           <View style={styles.tags}>
-            {physicsTags[worldKey].map((tag) => (
+            {worldMeta[worldKey].tags.map((tag) => (
               <View
                 key={tag}
                 style={[styles.tag, { backgroundColor: `${theme.accent}18` }]}

@@ -11,13 +11,13 @@ import { AppText } from '../primitives/AppText';
 import { StatusBadge } from '../primitives/StatusBadge';
 import { spacing } from '../../theme/spacing';
 import { resolveWorldTheme } from '../../theme/worldThemes';
-import { worldIcons } from '../../theme/worldMeta';
+import { worldMeta } from '../../theme/worldMeta';
 import { haptics } from '../../utils/haptics';
-import type { CelebrationListItem as CelebrationListItemType } from '../../types/celebration';
+import type { CelebrationListItemData } from '../../types/celebration';
 import type { WorldKey } from '../../types/world';
 
 interface CelebrationListItemProps {
-  item: CelebrationListItemType;
+  item: CelebrationListItemData;
   onPress: (id: string) => void;
   style?: ViewStyle;
 }
@@ -38,12 +38,12 @@ export const CelebrationListItem = React.memo(function CelebrationListItem({ ite
         Animated.timing(glowAnim, {
           toValue: 1,
           duration: 1200,
-          useNativeDriver: false,
+          useNativeDriver: true,
         }),
         Animated.timing(glowAnim, {
           toValue: 0,
           duration: 1200,
-          useNativeDriver: false,
+          useNativeDriver: true,
         }),
       ]),
     );
@@ -80,7 +80,7 @@ export const CelebrationListItem = React.memo(function CelebrationListItem({ ite
         <GlassCard worldTheme={worldTheme}>
           <View style={styles.header}>
             <AppText variant="bodySmall" worldTheme={worldTheme} style={styles.emoji}>
-              {worldIcons[item.worldKey as WorldKey] ?? '🎁'}
+              {worldMeta[item.worldKey as WorldKey]?.emoji ?? '🎁'}
             </AppText>
             <View style={styles.nameContainer}>
               <AppText variant="sectionTitleH2" worldTheme={worldTheme} numberOfLines={1}>
@@ -113,7 +113,7 @@ function isWithin24Hours(dateStr: string | null): boolean {
   return diff > 0 && diff < 24 * 60 * 60 * 1000;
 }
 
-function formatScheduleInfo(item: CelebrationListItemType): string {
+function formatScheduleInfo(item: CelebrationListItemData): string {
   if (item.completedAt) return `Completed ${formatDate(item.completedAt)}`;
   if (item.firstOpenedAt) return `Opened ${formatDate(item.firstOpenedAt)}`;
   if (item.sentAt) return `Delivered ${formatDate(item.sentAt)}`;

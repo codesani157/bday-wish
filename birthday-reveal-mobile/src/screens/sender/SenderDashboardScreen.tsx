@@ -1,5 +1,5 @@
 /**
- * SenderDashboardScreen (Screen 4.4 + 4.5)
+ * SenderDashboardScreen
  * Active & past gift manager with metric summary badges,
  * urgency-pulsing celebration items, and empty zero-state.
  */
@@ -13,16 +13,16 @@ import { AppButton } from '../../components/primitives/AppButton';
 import { GlassCard } from '../../components/primitives/GlassCard';
 import { CelebrationListItem } from '../../components/cards/CelebrationListItem';
 import { MetricSummaryBadge } from '../../components/cards/MetricSummaryBadge';
-import { defaultTheme } from '../../theme/worldThemes';
-import { spacing } from '../../theme/spacing';
-import { mockCelebrations } from '../../data/mockData';
+import { defaultTheme } from '@/theme/worldThemes';
+import { spacing } from '@/theme/spacing';
+import { useCelebrations } from '../../hooks/useCelebrations';
 import type { RootStackParamList } from '../../types/navigation';
-import type { CelebrationListItem as CelebrationListItemType } from '../../types/celebration';
+import type { CelebrationListItemData } from '../../types/celebration';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SenderDashboard'>;
 
 export function SenderDashboardScreen({ navigation }: Props) {
-  const celebrations = mockCelebrations;
+  const { data: celebrations = [], isLoading, error } = useCelebrations();
 
   const metrics = useMemo(() => {
     const counts = { scheduled: 0, sent: 0, opened: 0, completed: 0 };
@@ -43,7 +43,28 @@ export function SenderDashboardScreen({ navigation }: Props) {
     navigation.navigate('GiftBuilderStep1', {});
   };
 
-  // ─── Empty State (Screen 4.5) ───
+  if (isLoading) {
+    return (
+      <ScreenContainer worldTheme={defaultTheme}>
+        <View style={styles.emptyContainer}>
+          <AppText variant="bodyMessage" worldTheme={defaultTheme} muted>Loading dashboard...</AppText>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  if (error) {
+    return (
+      <ScreenContainer worldTheme={defaultTheme}>
+        <View style={styles.emptyContainer}>
+          <AppText variant="headlineH1" worldTheme={defaultTheme}>Error</AppText>
+          <AppText variant="bodyMessage" worldTheme={defaultTheme} muted>Failed to load celebrations.</AppText>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  // ─── Empty State ───
   if (celebrations.length === 0) {
     return (
       <ScreenContainer worldTheme={defaultTheme}>
@@ -111,7 +132,7 @@ export function SenderDashboardScreen({ navigation }: Props) {
         Birthday Surprises
       </AppText>
 
-      <FlatList<CelebrationListItemType>
+      <FlatList<CelebrationListItemData>
         data={celebrations}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (

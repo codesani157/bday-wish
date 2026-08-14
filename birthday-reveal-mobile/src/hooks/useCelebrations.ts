@@ -36,6 +36,18 @@ export function useCreateCelebration() {
   });
 }
 
+export function useUpdateCelebration(id: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: Partial<CelebrationDraftPayload>) => celebrationService.updateCelebration(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: celebrationKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: celebrationKeys.lists() });
+    },
+  });
+}
+
 export function useSealCelebration(id: string) {
   const queryClient = useQueryClient();
 

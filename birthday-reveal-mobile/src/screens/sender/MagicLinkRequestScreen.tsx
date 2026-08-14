@@ -1,5 +1,5 @@
 /**
- * MagicLinkRequestScreen (Screen 4.2)
+ * MagicLinkRequestScreen
  * Passwordless email authentication with floating label input,
  * glow validation, and 3D card flip to confirmation state.
  */
@@ -13,8 +13,9 @@ import { AppTextField } from '../../components/primitives/AppTextField';
 import { AppButton } from '../../components/primitives/AppButton';
 import { AppText } from '../../components/primitives/AppText';
 import { InlineAlert } from '../../components/feedback/InlineAlert';
-import { defaultTheme } from '../../theme/worldThemes';
-import { spacing } from '../../theme/spacing';
+import { CenteredStage } from '../../components/layout/CenteredStage';
+import { defaultTheme } from '@/theme/worldThemes';
+import { spacing } from '@/theme/spacing';
 import { config } from '../../config/env';
 import type { RootStackParamList } from '../../types/navigation';
 
@@ -98,8 +99,8 @@ export function MagicLinkRequestScreen({ navigation }: Props) {
   });
 
   return (
-    <ScreenContainer worldTheme={defaultTheme}>
-      <View style={styles.centered}>
+    <ScreenContainer worldTheme={defaultTheme} scrollable={false}>
+      <CenteredStage style={styles.stagePadding}>
         {/* Request Form (Front) */}
         <Animated.View
           style={[
@@ -216,15 +217,13 @@ export function MagicLinkRequestScreen({ navigation }: Props) {
             </GlassCard>
           </Animated.View>
         )}
-      </View>
+      </CenteredStage>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
+  stagePadding: {
     paddingVertical: spacing.xxl,
   },
   cardWrapper: {

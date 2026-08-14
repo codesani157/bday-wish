@@ -1,5 +1,5 @@
 /**
- * GiftBuilderStep4Screen (Screen 4.9)
+ * GiftBuilderStep4Screen
  * Interactive Preview Run — sender preview mode with overlay controls.
  */
 
@@ -11,7 +11,7 @@ import { GlassCard } from '../../components/primitives/GlassCard';
 import { AppButton } from '../../components/primitives/AppButton';
 import { AppText } from '../../components/primitives/AppText';
 import { useBuilderContext } from '../../features/celebrations/context/BuilderContext';
-import { spacing, radius } from '../../theme/spacing';
+import { spacing, radius } from '@/theme/spacing';
 import type { RootStackParamList } from '../../types/navigation';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GiftBuilderStep4'>;

@@ -20,17 +20,12 @@ export type RootStackParamList = {
   GiftBuilderStep4: { celebrationId: string };
   GiftBuilderStep5: { celebrationId: string };
 
-  // Recipient
-  RevealLoading: { token: string };
-  PreBirthdayCountdown: { token: string; countdownTo: string };
-  CinematicEntry: { token: string };
-  MemoryGate: { token: string; question: string };
-  InteractiveReveal: { token: string };
-  CelebrationApex: { token: string };
-  InvalidLink: undefined;
+  // Preview (Replaces native recipient screens)
+  WebViewPreview: { token: string };
 
   // System
   GenericError: { message?: string };
+  InvalidLink: undefined;
   NotFound: undefined;
 };
 

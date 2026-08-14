@@ -1,5 +1,5 @@
 /**
- * GiftBuilderStep2Screen (Screen 4.7)
+ * GiftBuilderStep2Screen
  * World Selection — choose spatial environment with animated cards.
  */
 
@@ -10,8 +10,8 @@ import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { StepWizardHeader } from '../../components/layout/StepWizardHeader';
 import { WorldCard } from '../../components/cards/WorldCard';
 import { AppButton } from '../../components/primitives/AppButton';
-import { defaultTheme } from '../../theme/worldThemes';
-import { spacing } from '../../theme/spacing';
+import { defaultTheme } from '@/theme/worldThemes';
+import { spacing } from '@/theme/spacing';
 import { mockWorlds } from '../../data/mockData';
 import { useBuilderContext } from '../../features/celebrations/context/BuilderContext';
 import type { WorldKey } from '../../types/world';
@@ -27,7 +27,18 @@ export function GiftBuilderStep2Screen({ navigation, route }: Props) {
   };
 
   return (
-    <ScreenContainer worldTheme={worldTheme} scrollable={false}>
+    <ScreenContainer
+      worldTheme={worldTheme}
+      scrollable={false}
+      footer={
+        <AppButton
+          title="Next: Assemble Gift"
+          onPress={handleNext}
+          worldTheme={worldTheme}
+          fullWidth
+        />
+      }
+    >
       <StepWizardHeader
         currentStep={2}
         totalSteps={5}
@@ -52,15 +63,6 @@ export function GiftBuilderStep2Screen({ navigation, route }: Props) {
           />
         ))}
       </ScrollView>
-
-      <View style={styles.actions}>
-        <AppButton
-          title="Next: Assemble Gift"
-          onPress={handleNext}
-          worldTheme={worldTheme}
-          fullWidth
-        />
-      </View>
     </ScreenContainer>
   );
 }
@@ -72,8 +74,5 @@ const styles = StyleSheet.create({
   },
   worldCard: {
     marginBottom: spacing.base,
-  },
-  actions: {
-    paddingVertical: spacing.xl,
   },
 });

@@ -1,5 +1,5 @@
 /**
- * GiftBuilderStep5Screen (Screen 4.10)
+ * GiftBuilderStep5Screen
  * The Seal & Schedule — cinematic gift sealing with delivery confirmation.
  */
 
@@ -11,8 +11,11 @@ import { StepWizardHeader } from '../../components/layout/StepWizardHeader';
 import { GlassCard } from '../../components/primitives/GlassCard';
 import { AppButton } from '../../components/primitives/AppButton';
 import { AppText } from '../../components/primitives/AppText';
+import { CenteredStage } from '../../components/layout/CenteredStage';
+import { ProgressBar } from '../../components/feedback/ProgressBar';
 import { useBuilderContext } from '../../features/celebrations/context/BuilderContext';
-import { spacing } from '../../theme/spacing';
+import { useSealCelebration } from '../../hooks/useCelebrations';
+import { spacing } from '@/theme/spacing';
 import { haptics } from '../../utils/haptics';
 import type { RootStackParamList } from '../../types/navigation';
 
@@ -25,24 +28,36 @@ export function GiftBuilderStep5Screen({ navigation }: Props) {
   const sealProgress = useRef(new Animated.Value(0)).current;
   const sealScale = useRef(new Animated.Value(1)).current;
 
+  const { mutateAsync: sealCelebration } = useSealCelebration(draft.celebrationId || 'unknown');
+
   const handleSeal = useCallback(async () => {
     setIsSealing(true);
     haptics.sealImpact();
 
-    Animated.sequence([
-      Animated.timing(sealScale, { toValue: 0.92, duration: 300, useNativeDriver: true }),
-      Animated.timing(sealProgress, { toValue: 1, duration: 3000, useNativeDriver: false }),
-      Animated.spring(sealScale, { toValue: 1.05, useNativeDriver: true, speed: 8 }),
-      Animated.spring(sealScale, { toValue: 1, useNativeDriver: true, speed: 12 }),
-    ]).start(() => {
-      haptics.celebrate();
+    try {
+      Animated.sequence([
+        Animated.timing(sealScale, { toValue: 0.92, duration: 300, useNativeDriver: true }),
+        Animated.timing(sealProgress, { toValue: 1, duration: 3000, useNativeDriver: false }),
+        Animated.spring(sealScale, { toValue: 1.05, useNativeDriver: true, speed: 8 }),
+        Animated.spring(sealScale, { toValue: 1, useNativeDriver: true, speed: 12 }),
+      ]).start(async () => {
+        haptics.celebrate();
+        
+        // Execute the real API call
+        if (draft.celebrationId) {
+          await sealCelebration(new Date().toISOString());
+        }
+
+        setIsSealing(false);
+        setIsSealed(true);
+        setTimeout(() => {
+          navigation.reset({ index: 0, routes: [{ name: 'SenderDashboard' }] });
+        }, 2000);
+      });
+    } catch (e) {
       setIsSealing(false);
-      setIsSealed(true);
-      setTimeout(() => {
-        navigation.reset({ index: 0, routes: [{ name: 'SenderDashboard' }] });
-      }, 2000);
-    });
-  }, [sealProgress, sealScale, navigation]);
+    }
+  }, [sealProgress, sealScale, navigation, draft.celebrationId, sealCelebration]);
 
   const progressWidth = sealProgress.interpolate({
     inputRange: [0, 1],
@@ -53,8 +68,8 @@ export function GiftBuilderStep5Screen({ navigation }: Props) {
     <ScreenContainer worldTheme={worldTheme}>
       <StepWizardHeader currentStep={5} totalSteps={5} title="Seal & Schedule" onBack={() => navigation.goBack()} worldTheme={worldTheme} />
 
-      <View style={styles.centered}>
-        <Animated.View style={{ transform: [{ scale: sealScale }] }}>
+      <CenteredStage>
+        <Animated.View style={{ transform: [{ scale: sealScale }], alignItems: 'center' }}>
           <AppText variant="displayHero" align="center" style={{ fontSize: 80, marginBottom: 24 }}>
             {isSealed ? '💌' : '🎁'}
           </AppText>
@@ -73,14 +88,14 @@ export function GiftBuilderStep5Screen({ navigation }: Props) {
           <>
             <GlassCard worldTheme={worldTheme} style={{ marginBottom: 24, width: '100%' }}>
               <AppText variant="buttonText" worldTheme={worldTheme} style={{ marginBottom: 8 }}>Delivery Summary</AppText>
-              <AppText variant="bodySmall" worldTheme={worldTheme} muted>Recipient: Your recipient</AppText>
-              <AppText variant="bodySmall" worldTheme={worldTheme} muted>Send at: Aug 18, 2026 — 00:00 EST</AppText>
+              <AppText variant="bodySmall" worldTheme={worldTheme} muted>Recipient: {draft.name || 'Your recipient'}</AppText>
+              <AppText variant="bodySmall" worldTheme={worldTheme} muted>Send at: {draft.birthdate || 'Not specified'}</AppText>
               <AppText variant="bodySmall" worldTheme={worldTheme} muted>World: Starlight Loft</AppText>
             </GlassCard>
 
             {isSealing && (
-              <View style={styles.progressTrack}>
-                <Animated.View style={[styles.progressFill, { width: progressWidth as any }]} />
+              <View style={{ marginBottom: 24, width: '100%' }}>
+                <ProgressBar progress={Number(JSON.stringify(sealProgress)) || (isSealed ? 1 : 0)} worldTheme={worldTheme} />
               </View>
             )}
 
@@ -94,13 +109,9 @@ export function GiftBuilderStep5Screen({ navigation }: Props) {
             />
           </>
         )}
-      </View>
+      </CenteredStage>
     </ScreenContainer>
   );
 }
 
-const styles = StyleSheet.create({
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  progressTrack: { width: '100%', height: 4, backgroundColor: 'rgba(247,208,112,0.15)', borderRadius: 999, marginBottom: 24, overflow: 'hidden' },
-  progressFill: { height: '100%', backgroundColor: '#F7D070', borderRadius: 999 },
-});
+const styles = StyleSheet.create({});

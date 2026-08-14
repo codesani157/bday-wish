@@ -1,5 +1,5 @@
 /**
- * MagicLinkVerificationScreen (Screen 4.3)
+ * MagicLinkVerificationScreen
  * Session verification with orbiting spinner and auto-redirect.
  */
 
@@ -12,8 +12,8 @@ import { AppText } from '../../components/primitives/AppText';
 import { AppButton } from '../../components/primitives/AppButton';
 import { StatusSpinner } from '../../components/feedback/StatusSpinner';
 import { InlineAlert } from '../../components/feedback/InlineAlert';
-import { defaultTheme } from '../../theme/worldThemes';
-import { spacing } from '../../theme/spacing';
+import { defaultTheme } from '@/theme/worldThemes';
+import { spacing } from '@/theme/spacing';
 import type { RootStackParamList } from '../../types/navigation';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MagicLinkVerification'>;

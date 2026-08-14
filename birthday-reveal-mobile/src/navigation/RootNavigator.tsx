@@ -21,14 +21,8 @@ import { GiftBuilderStep4Screen } from '../screens/sender/GiftBuilderStep4Screen
 import { GiftBuilderStep5Screen } from '../screens/sender/GiftBuilderStep5Screen';
 import { CelebrationDetailScreen } from '../screens/sender/CelebrationDetailScreen';
 
-// Recipient screens
-import { RevealLoadingScreen } from '../screens/recipient/RevealLoadingScreen';
-import { PreBirthdayCountdownScreen } from '../screens/recipient/PreBirthdayCountdownScreen';
-import { CinematicEntryScreen } from '../screens/recipient/CinematicEntryScreen';
-import { MemoryGateScreen } from '../screens/recipient/MemoryGateScreen';
-import { InteractiveRevealScreen } from '../screens/recipient/InteractiveRevealScreen';
-import { CelebrationApexScreen } from '../screens/recipient/CelebrationApexScreen';
-import { InvalidLinkScreen } from '../screens/recipient/InvalidLinkScreen';
+// Preview
+import { WebViewPreviewScreen } from '../screens/system/WebViewPreviewScreen';
 
 // System screens
 import { GenericErrorScreen, NotFoundScreen } from '../screens/system/SystemScreens';
@@ -61,18 +55,16 @@ export function RootNavigator() {
         <Stack.Screen name="GiftBuilderStep4" component={GiftBuilderStep4Screen} />
         <Stack.Screen name="GiftBuilderStep5" component={GiftBuilderStep5Screen} />
 
-        {/* ─── Recipient ─── */}
-        <Stack.Screen name="RevealLoading" component={RevealLoadingScreen} />
-        <Stack.Screen name="PreBirthdayCountdown" component={PreBirthdayCountdownScreen} />
-        <Stack.Screen name="CinematicEntry" component={CinematicEntryScreen} />
-        <Stack.Screen name="MemoryGate" component={MemoryGateScreen} />
-        <Stack.Screen name="InteractiveReveal" component={InteractiveRevealScreen} />
-        <Stack.Screen name="CelebrationApex" component={CelebrationApexScreen} />
-        <Stack.Screen name="InvalidLink" component={InvalidLinkScreen} />
+        {/* ─── Preview Modal ─── */}
+        <Stack.Group screenOptions={{ presentation: 'modal' }}>
+          <Stack.Screen name="WebViewPreview" component={WebViewPreviewScreen} />
+        </Stack.Group>
 
         {/* ─── System ─── */}
-        <Stack.Screen name="GenericError" component={GenericErrorScreen} />
-        <Stack.Screen name="NotFound" component={NotFoundScreen} />
+        <Stack.Group screenOptions={{ presentation: 'modal' }}>
+          <Stack.Screen name="GenericError" component={GenericErrorScreen} />
+          <Stack.Screen name="NotFound" component={NotFoundScreen} />
+        </Stack.Group>
       </Stack.Navigator>
     </NavigationContainer>
   );

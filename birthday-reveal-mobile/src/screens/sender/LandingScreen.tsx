@@ -1,5 +1,5 @@
 /**
- * LandingScreen (Screen 4.1)
+ * LandingScreen
  * Interactive hero gateway with 3D gift box placeholder,
  * glassmorphism navbar, and feature step cards.
  */
@@ -11,9 +11,9 @@ import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { GlassCard } from '../../components/primitives/GlassCard';
 import { AppButton } from '../../components/primitives/AppButton';
 import { AppText } from '../../components/primitives/AppText';
-import { defaultTheme } from '../../theme/worldThemes';
-import { spacing, radius, shadows } from '../../theme/spacing';
-import { palette } from '../../theme/colors';
+import { defaultTheme } from '@/theme/worldThemes';
+import { spacing, radius, shadows } from '@/theme/spacing';
+import { palette } from '@/theme/colors';
 import { haptics } from '../../utils/haptics';
 import type { RootStackParamList } from '../../types/navigation';
 

@@ -8,6 +8,7 @@ import React from 'react';
 import { View, Pressable, StyleSheet } from 'react-native';
 import { AppText } from '../primitives/AppText';
 import { spacing, radius } from '../../theme/spacing';
+import { ProgressBar } from '../feedback/ProgressBar';
 import { defaultTheme } from '../../theme/worldThemes';
 import type { ResolvedWorldTheme } from '../../theme/worldThemes';
 
@@ -54,16 +55,8 @@ export function StepWizardHeader({
       </View>
 
       {/* Progress bar */}
-      <View style={[styles.progressTrack, { backgroundColor: `${worldTheme.textMuted}20` }]}>
-        <View
-          style={[
-            styles.progressFill,
-            {
-              backgroundColor: worldTheme.accent,
-              width: `${(currentStep / totalSteps) * 100}%`,
-            },
-          ]}
-        />
+      <View style={styles.progressTrackWrapper}>
+        <ProgressBar progress={currentStep / totalSteps} worldTheme={worldTheme} />
       </View>
 
       {/* Title */}
@@ -91,15 +84,8 @@ const styles = StyleSheet.create({
   backButton: {
     minWidth: 60,
   },
-  progressTrack: {
-    height: 3,
-    borderRadius: radius.pill,
-    overflow: 'hidden',
+  progressTrackWrapper: {
     marginBottom: spacing.base,
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: radius.pill,
   },
   title: {
     marginTop: spacing.xs,

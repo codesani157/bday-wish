@@ -172,12 +172,24 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     elevation: 0,
   },
+  simpleInputWrapper: {
+    borderWidth: 1,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.base,
+    justifyContent: 'center',
+    minHeight: 48,
+  },
   label: {
     position: 'absolute',
     left: spacing.base,
     backgroundColor: 'transparent',
     paddingHorizontal: 4,
     ...typography.uiLabelSmall,
+    textTransform: 'none',
+  },
+  simpleLabel: {
+    ...typography.uiLabelSmall,
+    marginBottom: spacing.xs,
     textTransform: 'none',
   },
   input: {
@@ -194,8 +206,65 @@ const styles = StyleSheet.create({
   },
   hintText: {
     ...typography.uiLabelSmall,
-    marginTop: spacing.xs,
-    marginLeft: spacing.xs,
     textTransform: 'none',
   },
 });
+
+export function AppTextFieldSimple({
+  label,
+  value,
+  onChangeText,
+  error,
+  hint,
+  worldTheme = defaultTheme,
+  containerStyle,
+  required = false,
+  ...textInputProps
+}: AppTextFieldProps) {
+  const [isFocused, setIsFocused] = useState(false);
+
+  const borderColor = error
+    ? palette.error
+    : isFocused
+    ? worldTheme.accent
+    : `${worldTheme.textMuted}40`;
+
+  return (
+    <View style={[styles.container, containerStyle]}>
+      <Text style={[styles.simpleLabel, { color: error ? palette.error : isFocused ? worldTheme.accent : worldTheme.textMuted }]}>
+        {label}{required && ' *'}
+      </Text>
+      <View
+        style={[
+          styles.simpleInputWrapper,
+          {
+            borderColor,
+          },
+        ]}
+      >
+        <TextInput
+          style={[styles.input, { color: worldTheme.textMain }]}
+          value={value}
+          onChangeText={onChangeText}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          placeholderTextColor={`${worldTheme.textMuted}60`}
+          selectionColor={worldTheme.accent}
+          {...textInputProps}
+        />
+      </View>
+      {error && (
+        <Text style={[styles.errorText, { color: palette.error }]}>
+          {error}
+        </Text>
+      )}
+      {hint && !error && (
+        <Text style={[styles.hintText, { color: worldTheme.textMuted }]}>
+          {hint}
+        </Text>
+      )}
+    </View>
+  );
+}
+
+AppTextField.Simple = AppTextFieldSimple;

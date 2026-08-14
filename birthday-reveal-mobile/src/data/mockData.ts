@@ -3,7 +3,7 @@
  * Placeholder data for development before backend integration.
  */
 
-import type { CelebrationListItem } from '../types/celebration';
+import type { CelebrationListItemData } from '../types/celebration';
 import type { World, WorldKey } from '../types/world';
 
 export const mockWorlds: World[] = [
@@ -111,7 +111,7 @@ export const mockWorlds: World[] = [
   },
 ];
 
-export const mockCelebrations: CelebrationListItem[] = [
+export const mockCelebrations: CelebrationListItemData[] = [
   {
     id: 'c1',
     recipientName: 'Maya',

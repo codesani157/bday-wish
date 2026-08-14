@@ -61,7 +61,7 @@ export interface Celebration {
   updatedAt: string;
 }
 
-export interface CelebrationListItem {
+export interface CelebrationListItemData {
   id: string;
   recipientName: string;
   worldKey: string;

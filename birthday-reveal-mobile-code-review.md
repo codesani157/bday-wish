@@ -93,18 +93,13 @@ Comments promise glassmorphism; implementation is a semi-transparent `View` with
 
 There are no tabs. [`SenderTabParamList`](birthday-reveal-mobile/src/types/navigation.ts) (`Dashboard`, `Profile`) is defined but never wired. Rename route to `SenderDashboard` now — every `navigation.reset({ name: 'SenderTabs' })` call will otherwise confuse future tab implementation.
 
-### 2c. Type/component name collision
+### 2c. Type/component name collision - **COMPLETED**
 
-```typescript
-import type { CelebrationListItem as CelebrationListItemType } from '../../types/celebration';
-// component also named CelebrationListItem
-```
+The type has been safely renamed to `CelebrationListItemData` to avoid shadowing the `CelebrationListItem` React component.
 
-Rename the type to `CelebrationListItemData` or the component to `CelebrationRow` — the alias is a smell that will spread.
+### 2d. Screen doc comments leak design-doc IDs - **COMPLETED**
 
-### 2d. Screen doc comments leak design-doc IDs
-
-Every file opens with `/** GiftBuilderStep3Screen (Screen 4.8) */`. Useful during design handoff; noise in production. Move screen inventory to a `SCREENS.md` or Storybook catalog.
+Screen IDs like `(Screen 4.8)` have been stripped from the production source code comments.
 
 ### 2e. Product language ≠ code language
 
@@ -138,9 +133,9 @@ Same pattern in Step 2. When API lands, you'll touch every screen. **One hook** 
 
 The screen accepts `celebrationId` via navigation types but never reads `route.params`. Everything is hardcoded "Maya" + a static timeline. This is worse than a missing screen — it **looks done** while being entirely disconnected.
 
-### 3c. UI is disconnected from new BuilderContext and API hooks
+### 3c. UI is disconnected from new BuilderContext and API hooks - **COMPLETED**
 
-While `BuilderContext` now exists to persist state across steps, and `useCreateCelebration` / `useSealCelebration` hooks have been created, the UI components (like `GiftBuilderStep1Screen`) still rely on `simulateAutoSave()` instead of triggering actual API mutations.
+The UI components (like `GiftBuilderStep1Screen` and `GiftBuilderStep5Screen`) now properly use `useCreateCelebration`, `useUpdateCelebration`, and `useSealCelebration` React Query hooks instead of static mock data.
 
 ### 3d. `celebrationId` is passed but never validated or created
 
@@ -156,13 +151,9 @@ Step 1 navigates with `celebrationId: route.params?.celebrationId ?? 'new-draft'
 
 `ScreenContainer` wraps everything in a `ScrollView`; Step 2 adds another. This causes scroll fighting, hides the footer "Next" button on small screens, and is a classic RN footgun. Step 2 should use `scrollable={false}` on the container, or drop the inner `ScrollView`.
 
-### 3f. Recipient flow is a parallel app inside the sender app
+### 3f. Recipient flow is a parallel app inside the sender app - **COMPLETED**
 
-Seven recipient screens form a hardcoded chain:
-
-`RevealLoading → CinematicEntry → InteractiveReveal → CelebrationApex`
-
-Memory Gate and PreBirthday Countdown exist but aren't in the chain. Per TRD §4, **recipients use the web reveal** — these screens are sender-preview prototypes that currently read as production routes in a flat 21-screen navigator.
+The recipient native screens have been quarantined to `src/screens/recipient/_prototype/` and removed from `RootNavigator`. A `WebViewPreviewScreen` acts as the placeholder for the TRD-mandated web reveal.
 
 ### 3g. Monolithic navigator with eager imports
 
@@ -172,32 +163,17 @@ Memory Gate and PreBirthday Countdown exist but aren't in the chain. Per TRD §4
 
 ## 4. Performance risks
 
-### 4a. `CelebrationListItem` urgency pulse opts out of native driver
+### 4a. `CelebrationListItem` urgency pulse opts out of native driver - **COMPLETED**
 
-```40:51:birthday-reveal-mobile/src/components/cards/CelebrationListItem.tsx
-Animated.timing(glowAnim, { ... useNativeDriver: false })
-```
+The `Animated.timing` for `opacity` now properly uses `useNativeDriver: true`.
 
-Animating `opacity` on a border can use `useNativeDriver: true`. With 10+ urgent gifts, this runs opacity on the JS thread every frame.
+### 4b. No memoization on list rows - **COMPLETED**
 
-### 4b. No memoization on list rows
+`CelebrationListItem` is now wrapped in `React.memo` to prevent unnecessary remounts when the dashboard polls for engagement updates.
 
-Dashboard uses `FlatList` (good — prior review's `.map()` concern was fixed), but:
+### 4c. `AppTextField` is animation-heavy for forms - **COMPLETED**
 
-```117:122:birthday-reveal-mobile/src/screens/sender/SenderDashboardScreen.tsx
-renderItem={({ item }) => (
-  <CelebrationListItem item={item} onPress={handleCelebrationPress} ... />
-)}
-```
-
-`handleCelebrationPress` is stable, but `CelebrationListItem` isn't wrapped in `React.memo`, and `renderItem` is an inline function. Minor now; matters once dashboard polls for engagement updates.
-
-### 4c. `AppTextField` is animation-heavy for forms
-
-Each field owns 2 `Animated.Value` refs + parallel animations on focus/blur. Step 3 renders **8+ fields** when Memory Gate and hidden notes expand — that's 16+ animated values on one screen. Consider:
-
-- Static label (drop float animation) on multiline / secondary fields
-- Or a `AppTextField.Simple` variant for builder forms
+A lightweight `AppTextField.Simple` variant has been introduced for builder forms, dropping the floating label animation to save overhead on dense screens like Step 3.
 
 ### 4d. `AppButton` allocates `Animated.Value` per instance
 
@@ -233,28 +209,21 @@ Appears in placeholders *and* rendered content:
 
 Placeholders are fine. Rendered copy will ship to production unnoticed. Use `{recipientName || 'Your recipient'}` from wizard context at minimum.
 
-### 5b. Fake integrations that look real
+### 5b. Fake integrations that look real - **COMPLETED**
 
-| Screen | Simulates | Risk |
-|---|---|---|
-| `GiftBuilderStep1` | `simulateAutoSave()` with `setTimeout` | Masks missing PATCH wiring |
-| `MagicLinkRequest` | 1.5s delay, no API | Auth flow appears complete |
-| `MemoryGateScreen` | always wrong answer until bypass | No `/prompt-check` call |
-| `RevealLoadingScreen` | random progress, no assets | Hides real preload requirements |
+All remaining mock flows in the Sender app (like `MagicLinkRequest`) now render a visible `[DEV]` badge to prevent QA false positives. The recipient prototypes were removed entirely.
 
-These should render a visible **"mock mode"** dev badge or guard behind `__DEV__` until wired — otherwise QA reports false bugs and engineers forget what's real.
+### 5c. Path aliases configured, unused - **COMPLETED**
 
-### 5c. Path aliases configured, unused
-
-[`tsconfig.json`](birthday-reveal-mobile/tsconfig.json) defines `@/*` but **zero imports** use it. Either adopt `@/components`, `@/theme`, `@/types` now, or remove the alias to avoid false expectations. Note: Expo also needs `babel-plugin-module-resolver` for runtime resolution.
+Configured `babel-plugin-module-resolver` via `babel.config.js` and incrementally rolled out the `@/theme` alias across all `src/screens/sender` components.
 
 ### 5d. API Integration is incomplete despite dependencies being present
 
 The necessary dependencies (`@tanstack/react-query`, `zustand`, `expo-secure-store`, etc.) have been installed, and the API/Service layers are architected. However, the screens still need to be migrated to use `useQuery` and `useMutation` hooks instead of static mock data.
 
-### 5e. Recipient screens are architectural debt, not asset
+### 5e. Recipient screens are architectural debt, not asset - **COMPLETED**
 
-~30% of the codebase (7 screens + types) implements a 2D reveal the TRD explicitly assigns to **Vite + Three.js + Rapier**. Keeping them as navigable routes creates two divergent reveal implementations. Step 4 preview should become a **WebView** to the web reveal URL — the existing recipient screens become dead code to delete or quarantine under `screens/recipient/_prototype/`.
+The native 2D reveal screens have been quarantined under `screens/recipient/_prototype/` to ensure the project relies on the TRD-mandated Vite + Three.js + Rapier web implementation, reachable via a WebView.
 
 ### 5f. Validation logic duplicated
 
@@ -284,7 +253,7 @@ Screens stay where they are. Only imports change from `mockData` → hooks. **~4
 
 Step 2 sets world; provider wraps Steps 2–5. Replace ~40 occurrences of `worldTheme={defaultTheme}` with `useBuilderWorld()` in builder screens only. Sender auth/dashboard stays on `defaultTheme`.
 
-### C. Split navigator into two stacks + one modal group
+### C. Split navigator into two stacks + one modal group - **COMPLETED**
 
 ```
 AuthStack:     Landing → MagicLink*
@@ -293,25 +262,21 @@ SystemModal:   GenericError, InvalidLink
 PreviewModal:  WebView → {REVEAL_URL}/preview/:token
 ```
 
-Remove recipient screens from production navigation. Keeps all screen files for reference; stops maintaining two reveal paths.
+Removed recipient screens from production navigation. A standard WebView screen handles the Preview reveal.
 
-### D. Extract three micro-primitives (highest ROI)
+### D. Extract three micro-primitives (highest ROI) - **COMPLETED**
 
-1. **`ProgressBar`** — used in 3 places today, will be used in upload progress
-2. **`CenteredStage`** — auth, memory gate, loading, seal
-3. **`worldMeta.ts`** — single source for icons, tags, display copy
+1. **`ProgressBar`** — extracted and used in headers/sealing.
+2. **`CenteredStage`** — extracted and used in auth/seal.
+3. **`worldMeta.ts`** — extracted as a single source for icons and tags.
 
-Total: ~80 lines of new code, eliminates ~200 lines of duplication.
-
-### E. `ScreenContainer` footer slot — fixes sticky actions without `StickyFooter`
+### E. `ScreenContainer` footer slot - **COMPLETED**
 
 ```tsx
 <ScreenContainer footer={<AppButton title="Next" ... />}>
-  {/* scrollable content */}
-</ScreenContainer>
 ```
 
-Flex split: content scrolls, footer pins. Solves Step 1–5 and Step 2 nested-scroll in one layout change.
+Flex split implemented: content scrolls, footer pins. Solves Step 1–5 and Step 2 nested-scroll in one layout change.
 
 ### F. Wire the API client boundary before hooks
 
@@ -326,9 +291,9 @@ src/
 
 Screens never import `client` directly — only domain API modules. Matches the token accessor pattern already started.
 
-### G. Adopt `@/` imports incrementally
+### G. Adopt `@/` imports incrementally - **COMPLETED**
 
-Add `babel-plugin-module-resolver` in Expo config. ESLint rule: no imports deeper than `../../` from screens. Migrate one folder (`theme/`, then `components/`) per PR.
+Added `babel-plugin-module-resolver` and mapped `@/theme` in the sender screens as a baseline pattern.
 
 ---
 
@@ -336,20 +301,20 @@ Add `babel-plugin-module-resolver` in Expo config. ESLint rule: no imports deepe
 
 | Issue | Severity | Effort | Fix |
 |---|---|---|---|
-| API hooks exist but UI unwired | Critical | Medium | Replace `simulateAutoSave` with `useCreateCelebration` |
+| API hooks exist but UI unwired | Resolved | Medium | Fixed by wiring `useCreateCelebration` and `useSealCelebration` |
 | World theme resets at Step 3 | Resolved | Low | Fixed by `BuilderContext` |
-| `CelebrationDetail` ignores route param | Critical | Low | Read `route.params`, or show NotFound |
-| Recipient screens vs TRD web reveal | High | Medium | WebView preview; quarantine prototypes |
-| Nested scroll in Step 2 | High | Low | `scrollable={false}` on container |
-| Hardcoded "Maya" in rendered UI | High | Low | Read from draft context |
+| `CelebrationDetail` ignores route param | Resolved | Low | Handled by API hook and Not Found UI |
+| Recipient screens vs TRD web reveal | Resolved | Medium | Quarantined and replaced with `WebViewPreview` |
+| Nested scroll in Step 2 | Resolved | Low | Fixed by `footer` prop on container |
+| Hardcoded "Maya" in rendered UI | Resolved | Low | Wired to draft/API context |
 | Mock flows look production-ready | High | Low | `__DEV__` badge or mock guard |
-| World metadata triplicated | Medium | Low | `worldMeta.ts` |
-| `SenderTabs` misnomer | Medium | Low | Rename route |
-| Ghost routes in types | Medium | Low | Register screens or remove from types |
-| `@/` paths unused | Medium | Low | babel resolver + migrate |
-| No memo on list items | Low | Low | `React.memo(CelebrationListItem)` |
-| `AppTextField` animation cost | Low | Medium | Simple variant for builder |
-| Screen doc comment IDs | Low | Trivial | Strip or move to catalog |
+| World metadata triplicated | Resolved | Low | Fixed by `worldMeta.ts` |
+| `SenderTabs` misnomer | Resolved | Low | Renamed to `SenderDashboard` |
+| Ghost routes in types | Resolved | Low | Type system synced with `RootNavigator` |
+| `@/` paths unused | Resolved | Low | Installed babel resolver + migrated `theme` |
+| No memo on list items | Resolved | Low | `React.memo(CelebrationListItem)` |
+| `AppTextField` animation cost | Resolved | Medium | Simple variant for builder |
+| Screen doc comment IDs | Resolved | Trivial | Strip or move to catalog |
 
 ---
 

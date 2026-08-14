@@ -3,7 +3,7 @@ export {
   type Celebration,
   type CelebrationStatus,
   type CelebrationMedia,
-  type CelebrationListItem,
+  type CelebrationListItemData,
   type CelebrationDraft,
   type HiddenSurprise,
 } from './celebration';

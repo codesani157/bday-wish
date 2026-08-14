@@ -1,5 +1,5 @@
 /**
- * CelebrationDetailScreen (Screen 4.11)
+ * CelebrationDetailScreen
  * Live status, engagement timeline, and management actions.
  */
 
@@ -11,10 +11,10 @@ import { GlassCard } from '../../components/primitives/GlassCard';
 import { AppButton } from '../../components/primitives/AppButton';
 import { AppText } from '../../components/primitives/AppText';
 import { StatusBadge } from '../../components/primitives/StatusBadge';
-import { defaultTheme } from '../../theme/worldThemes';
-import { spacing } from '../../theme/spacing';
+import { defaultTheme } from '@/theme/worldThemes';
+import { spacing } from '@/theme/spacing';
+import { useCelebration } from '../../hooks/useCelebrations';
 import type { RootStackParamList } from '../../types/navigation';
-import { mockCelebrations } from '../../data/mockData';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CelebrationDetail'>;
 
@@ -28,7 +28,28 @@ const MOCK_TIMELINE = [
 
 export function CelebrationDetailScreen({ route, navigation }: Props) {
   const { celebrationId } = route.params;
-  const celebration = mockCelebrations.find((c) => c.id === celebrationId) || mockCelebrations[0];
+  const { data: celebration, isLoading, error } = useCelebration(celebrationId);
+
+  if (isLoading) {
+    return (
+      <ScreenContainer worldTheme={defaultTheme}>
+        <View style={[styles.header, { flex: 1, justifyContent: 'center', alignItems: 'center' }]}>
+          <AppText variant="bodySmall" worldTheme={defaultTheme} muted>Loading...</AppText>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  if (error || !celebration) {
+    return (
+      <ScreenContainer worldTheme={defaultTheme}>
+        <View style={[styles.header, { flex: 1, justifyContent: 'center', alignItems: 'center' }]}>
+          <AppText variant="headlineH1" worldTheme={defaultTheme}>Not Found</AppText>
+          <AppButton title="Go Back" onPress={() => navigation.goBack()} variant="ghost" worldTheme={defaultTheme} style={{ marginTop: 24 }} />
+        </View>
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer worldTheme={defaultTheme}>
@@ -36,7 +57,7 @@ export function CelebrationDetailScreen({ route, navigation }: Props) {
       <View style={styles.header}>
         <AppText variant="headlineH1" worldTheme={defaultTheme}>{celebration.recipientName}'s Birthday</AppText>
         <View style={styles.headerMeta}>
-          <AppText variant="uiLabelSmall" worldTheme={defaultTheme} muted>{celebration.worldDisplayName}</AppText>
+          <AppText variant="uiLabelSmall" worldTheme={defaultTheme} muted>Gift World</AppText>
           <StatusBadge status={celebration.status} />
         </View>
       </View>

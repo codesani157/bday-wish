@@ -17,6 +17,7 @@ interface ScreenContainerProps {
   worldTheme?: ResolvedWorldTheme;
   scrollable?: boolean;
   padded?: boolean;
+  footer?: React.ReactNode;
   style?: ViewStyle;
   statusBarStyle?: 'light' | 'dark';
 }
@@ -26,6 +27,7 @@ export function ScreenContainer({
   worldTheme = defaultTheme,
   scrollable = true,
   padded = true,
+  footer,
   style,
   statusBarStyle = 'light',
 }: ScreenContainerProps) {
@@ -53,6 +55,7 @@ export function ScreenContainer({
         >
           {children}
         </ScrollView>
+        {footer && <View style={[styles.footer, contentStyle]}>{footer}</View>}
       </View>
     );
   }
@@ -61,6 +64,7 @@ export function ScreenContainer({
     <View style={[containerStyle, contentStyle, style]}>
       <StatusBar style={statusBarStyle} />
       {children}
+      {footer && <View style={styles.footer}>{footer}</View>}
     </View>
   );
 }
@@ -68,5 +72,8 @@ export function ScreenContainer({
 const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
+  },
+  footer: {
+    paddingVertical: 16,
   },
 });

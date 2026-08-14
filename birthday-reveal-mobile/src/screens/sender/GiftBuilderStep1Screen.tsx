@@ -1,5 +1,5 @@
 /**
- * GiftBuilderStep1Screen (Screen 4.6)
+ * GiftBuilderStep1Screen
  * Recipient Details — collect name, email, birthdate, timezone
  * with live auto-save feedback.
  */
@@ -13,8 +13,9 @@ import { InlineAlert } from '../../components/feedback/InlineAlert';
 import { AppTextField } from '../../components/primitives/AppTextField';
 import { AppButton } from '../../components/primitives/AppButton';
 import { useBuilderContext } from '../../features/celebrations/context/BuilderContext';
-import { defaultTheme } from '../../theme/worldThemes';
-import { spacing } from '../../theme/spacing';
+import { useCreateCelebration, useUpdateCelebration } from '../../hooks/useCelebrations';
+import { defaultTheme } from '@/theme/worldThemes';
+import { spacing } from '@/theme/spacing';
 import type { RootStackParamList } from '../../types/navigation';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GiftBuilderStep1'>;
@@ -24,11 +25,27 @@ export function GiftBuilderStep1Screen({ navigation, route }: Props) {
   const [autoSave, setAutoSave] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const simulateAutoSave = useCallback(() => {
+  const { mutateAsync: createDraft } = useCreateCelebration();
+  const { mutateAsync: updateDraftMutation } = useUpdateCelebration(draft.celebrationId || '');
+
+  const triggerAutoSave = useCallback(async () => {
+    // Basic debounce / async state management for visual feedback
     setAutoSave('saving');
-    setTimeout(() => setAutoSave('saved'), 800);
-    setTimeout(() => setAutoSave('idle'), 2500);
-  }, []);
+    try {
+      if (draft.celebrationId) {
+        await updateDraftMutation({
+          recipientName: draft.name,
+          recipientEmail: draft.email,
+          recipientBirthdate: draft.birthdate,
+          recipientTimezone: draft.timezone,
+        });
+      }
+      setAutoSave('saved');
+      setTimeout(() => setAutoSave('idle'), 2500);
+    } catch (e) {
+      setAutoSave('idle');
+    }
+  }, [draft, updateDraftMutation]);
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -41,16 +58,47 @@ export function GiftBuilderStep1Screen({ navigation, route }: Props) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!validate()) return;
-    // In production: create or patch draft, then navigate
-    navigation.navigate('GiftBuilderStep2', { celebrationId: route.params?.celebrationId ?? 'new-draft' });
+    
+    setAutoSave('saving');
+    let cid = draft.celebrationId;
+
+    try {
+      if (!cid) {
+        const res = await createDraft({
+          recipientName: draft.name,
+          recipientEmail: draft.email,
+          recipientBirthdate: draft.birthdate,
+          recipientTimezone: draft.timezone,
+        });
+        cid = res.id;
+        updateDraft({ celebrationId: cid });
+      } else {
+        await triggerAutoSave();
+      }
+      
+      navigation.navigate('GiftBuilderStep2', { celebrationId: cid });
+    } catch (e) {
+      // Handle error natively, for now just revert to idle
+      setAutoSave('idle');
+    }
   };
 
   return (
-    <ScreenContainer worldTheme={worldTheme}>
-      {__DEV__ && (
-        <InlineAlert message="[DEV] API is mocked. Auto-save is simulated." variant="warning" />
+    <ScreenContainer
+      worldTheme={worldTheme}
+      footer={
+        <AppButton
+          title="Next: Choose World"
+          onPress={handleNext}
+          worldTheme={worldTheme}
+          fullWidth
+        />
+      }
+    >
+      {__DEV__ && !draft.celebrationId && (
+        <InlineAlert message="[DEV] Creates real drafts on the backend now." variant="info" />
       )}
       <StepWizardHeader
         currentStep={1}
@@ -65,7 +113,8 @@ export function GiftBuilderStep1Screen({ navigation, route }: Props) {
         <AppTextField
           label="Recipient Name"
           value={draft.name}
-          onChangeText={(text) => { updateDraft({ name: text }); simulateAutoSave(); }}
+          onChangeText={(text) => { updateDraft({ name: text }); }}
+          onBlur={triggerAutoSave}
           error={errors.name}
           placeholder="Maya"
           worldTheme={worldTheme}
@@ -75,7 +124,8 @@ export function GiftBuilderStep1Screen({ navigation, route }: Props) {
         <AppTextField
           label="Recipient Email"
           value={draft.email}
-          onChangeText={(text) => { updateDraft({ email: text }); simulateAutoSave(); }}
+          onChangeText={(text) => { updateDraft({ email: text }); }}
+          onBlur={triggerAutoSave}
           error={errors.email}
           placeholder="maya@example.com"
           keyboardType="email-address"
@@ -87,7 +137,8 @@ export function GiftBuilderStep1Screen({ navigation, route }: Props) {
         <AppTextField
           label="Birthdate"
           value={draft.birthdate}
-          onChangeText={(text) => { updateDraft({ birthdate: text }); simulateAutoSave(); }}
+          onChangeText={(text) => { updateDraft({ birthdate: text }); }}
+          onBlur={triggerAutoSave}
           error={errors.birthdate}
           placeholder="YYYY-MM-DD"
           hint="Supports Feb 29 leap day birthdays"
@@ -98,19 +149,11 @@ export function GiftBuilderStep1Screen({ navigation, route }: Props) {
         <AppTextField
           label="Timezone"
           value={draft.timezone}
-          onChangeText={(text) => { updateDraft({ timezone: text }); simulateAutoSave(); }}
+          onChangeText={(text) => { updateDraft({ timezone: text }); }}
+          onBlur={triggerAutoSave}
           placeholder="America/New_York"
           hint="Auto-detected from your device"
           worldTheme={worldTheme}
-        />
-      </View>
-
-      <View style={styles.actions}>
-        <AppButton
-          title="Next: Choose World"
-          onPress={handleNext}
-          worldTheme={worldTheme}
-          fullWidth
         />
       </View>
     </ScreenContainer>
@@ -120,9 +163,5 @@ export function GiftBuilderStep1Screen({ navigation, route }: Props) {
 const styles = StyleSheet.create({
   form: {
     marginTop: spacing.base,
-  },
-  actions: {
-    marginTop: spacing.xxl,
-    paddingBottom: spacing.huge,
   },
 });

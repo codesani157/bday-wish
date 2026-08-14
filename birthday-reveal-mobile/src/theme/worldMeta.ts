@@ -1,15 +1,30 @@
 import { WorldKey } from '../types/world';
 
-export const worldIcons: Record<WorldKey, string> = {
-  'starlight-loft': '✨',
-  'midnight-garden': '🌙',
-  'arcade-cabinet': '👾',
-  'cloud-terrace': '☁️',
-};
+export interface WorldMetadata {
+  icon: string;
+  emoji: string;
+  tags: string[];
+}
 
-export const physicsTags: Record<WorldKey, string[]> = {
-  'starlight-loft': ['Low Gravity', 'Star Confetti', 'Warm Glow'],
-  'midnight-garden': ['Normal Gravity', 'Fireflies', 'Petals'],
-  'arcade-cabinet': ['Heavy Gravity', 'Bouncy', 'Pixel FX'],
-  'cloud-terrace': ['Float Drift', 'Sunlight', 'Gentle'],
+export const worldMeta: Record<WorldKey, WorldMetadata> = {
+  'starlight-loft': {
+    icon: '✨',
+    emoji: '🌟',
+    tags: ['Low Gravity', 'Star Confetti', 'Warm'],
+  },
+  'midnight-garden': {
+    icon: '🌿',
+    emoji: '🌿',
+    tags: ['Normal Gravity', 'Petal Confetti', 'Cinematic'],
+  },
+  'arcade-cabinet': {
+    icon: '👾',
+    emoji: '🕹️',
+    tags: ['Heavy Gravity', 'Pixel Confetti', 'Bouncy'],
+  },
+  'cloud-terrace': {
+    icon: '☁️',
+    emoji: '🌤️',
+    tags: ['Low Gravity', 'Drifting Confetti', 'Airy'],
+  },
 };

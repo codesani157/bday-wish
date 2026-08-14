@@ -1,5 +1,5 @@
 /**
- * GiftBuilderStep3Screen (Screen 4.8)
+ * GiftBuilderStep3Screen
  * Assembly Canvas — headline, message, photo uploads,
  * hidden surprises bucket, music link, and memory gate config.
  */
@@ -14,7 +14,7 @@ import { AppTextField } from '../../components/primitives/AppTextField';
 import { AppButton } from '../../components/primitives/AppButton';
 import { AppText } from '../../components/primitives/AppText';
 import { useBuilderContext } from '../../features/celebrations/context/BuilderContext';
-import { spacing, radius } from '../../theme/spacing';
+import { spacing, radius } from '@/theme/spacing';
 import type { RootStackParamList } from '../../types/navigation';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GiftBuilderStep3'>;
@@ -39,7 +39,17 @@ export function GiftBuilderStep3Screen({ navigation, route }: Props) {
   };
 
   return (
-    <ScreenContainer worldTheme={worldTheme}>
+    <ScreenContainer 
+      worldTheme={worldTheme}
+      footer={
+        <AppButton
+          title="Next: Preview Gift"
+          onPress={handleNext}
+          worldTheme={worldTheme}
+          fullWidth
+        />
+      }
+    >
       <StepWizardHeader
         currentStep={3}
         totalSteps={5}
@@ -49,7 +59,7 @@ export function GiftBuilderStep3Screen({ navigation, route }: Props) {
       />
 
       {/* ─── Headline ─── */}
-      <AppTextField
+      <AppTextField.Simple
         label="Headline"
         value={draft.headline}
         onChangeText={(text) => updateDraft({ headline: text })}
@@ -58,7 +68,7 @@ export function GiftBuilderStep3Screen({ navigation, route }: Props) {
       />
 
       {/* ─── Personal Message ─── */}
-      <AppTextField
+      <AppTextField.Simple
         label="Personal Message"
         value={draft.messageBody}
         onChangeText={(text) => updateDraft({ messageBody: text })}
@@ -118,7 +128,7 @@ export function GiftBuilderStep3Screen({ navigation, route }: Props) {
           />
         </View>
         {hiddenNotes.map((_, i) => (
-          <AppTextField
+          <AppTextField.Simple
             key={i}
             label={`Secret Note ${i + 1}`}
             value={hiddenNotes[i]}
@@ -136,7 +146,7 @@ export function GiftBuilderStep3Screen({ navigation, route }: Props) {
       </GlassCard>
 
       {/* ─── Music Layer ─── */}
-      <AppTextField
+      <AppTextField.Simple
         label="Music Link"
         value={draft.musicUrl}
         onChangeText={(text) => updateDraft({ musicUrl: text })}
@@ -161,14 +171,14 @@ export function GiftBuilderStep3Screen({ navigation, route }: Props) {
 
         {enableMemoryGate && (
           <View style={styles.memoryGateFields}>
-            <AppTextField
+            <AppTextField.Simple
               label="Question"
               value={draft.memoryPrompt}
               onChangeText={(text) => updateDraft({ memoryPrompt: text })}
               placeholder="Where did we first meet?"
               worldTheme={worldTheme}
             />
-            <AppTextField
+            <AppTextField.Simple
               label="Answer"
               value={draft.memoryAnswer}
               onChangeText={(text) => updateDraft({ memoryAnswer: text })}
@@ -180,15 +190,6 @@ export function GiftBuilderStep3Screen({ navigation, route }: Props) {
         )}
       </GlassCard>
 
-      {/* ─── Actions ─── */}
-      <View style={styles.actions}>
-        <AppButton
-          title="Next: Preview Gift"
-          onPress={handleNext}
-          worldTheme={worldTheme}
-          fullWidth
-        />
-      </View>
     </ScreenContainer>
   );
 }
@@ -252,9 +253,5 @@ const styles = StyleSheet.create({
   },
   memoryGateFields: {
     marginTop: spacing.base,
-  },
-  actions: {
-    paddingVertical: spacing.xl,
-    paddingBottom: spacing.huge,
   },
 });
